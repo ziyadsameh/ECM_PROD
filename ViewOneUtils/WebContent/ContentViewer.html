@@ -1,0 +1,91 @@
+<html>
+    <head>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge;chrome=1"/>
+        <title>XDomainViewerWindow.html</title>
+        <script>
+            window.onbeforeunload = function() {
+            	if ( window.icnViewerCount > 0 ) {
+               		return("There are viewer tabs still open.  Please go back and close each of these before closing the window.");
+            	}
+            }
+            
+            function openDocument(repositoryId, docId, classId, vsId, version) {
+                getContentViewer(function(frame) {
+                    frame.contentWindow.postMessage(JSON.stringify({ 
+                        call: "openDocument",
+                        repositoryId: repositoryId,
+                        docId: docId,
+                        classId: classId,
+                        vsId: vsId,
+                        version: version
+                    }), "*");
+                }, true);
+                
+                return false;
+            }
+            
+            function openBookmark(bookmarkUrl) {
+                getContentViewer(function(frame) {
+                    frame.contentWindow.postMessage(JSON.stringify({ 
+                        call: "openBookmark",
+                        bookmarkUrl: bookmarkUrl
+                    }), "*");
+                }, true);
+                
+                return false;
+            }
+            
+            function closeAllViewers() {
+                getContentViewer(function(frame) {
+                    frame.contentWindow.postMessage(JSON.stringify({ call: "closeAllViewers" }), "*");
+                }, false);    
+                
+                return false;
+            }
+
+            function getContentViewer(callback, create) {
+                var icnFrame = document.getElementById("icnFrame");
+                if ( icnFrame ) {
+                    callback(icnFrame);
+                }
+            }
+            
+            function listenMessage(event) {
+                if ( event.data == "ready" ) {
+                    window.icnWrapper = {
+                        openDocument: openDocument,
+                        openBookmark: openBookmark,
+                        closeAllViewers: closeAllViewers
+                    };
+                    window.icnViewerCount = 0;
+                } else {
+                	try {
+                	    var message = JSON.parse(event.data);
+                	    if ( message && message.call ) {
+                	    	switch ( message.call ) {
+                	    	case "addChild":
+                	    	case "removeChild":
+                	    		window.icnViewerCount = message.count;
+                	    		break;
+                	    	}
+                	    } 
+                	} catch (error) {
+                	} 
+                }
+            }
+
+            if (window.addEventListener) {
+                window.addEventListener("message", listenMessage, false);
+            } else {
+                window.attachEvent("onmessage", listenMessage);
+            }
+        </script>
+    </head>
+    <body style="width: 100%; height: 100%; overflow: hidden; margin-top: 0px; margin-left: 0px; padding-top: 0px; padding-left: 0px;">
+        <iframe id="icnFrame" width="100%" height="600px" src="http://ecmdemo1.ecm.ibm.local:9080/navigator/launch.jsp?feature=embeddedContentViewer&sideChrome=0"></iframe>
+		<br>
+        <a href='#' onclick='openDocument("icmcmtos", "TestClass,{9AEADB06-CA68-49F2-B6EC-6D6AD694538A},{6AAF14D8-679A-45D4-8BBF-72D72BF72B5C}", "Document", "{C07AEB3D-3D85-CC26-89F7-68B2F0800000}", "current")'>Sample 1</a>
+        <br>
+        <a href="#" onclick='closeAllViewers()'>Close all viewers</a>
+    </body>
+</html>

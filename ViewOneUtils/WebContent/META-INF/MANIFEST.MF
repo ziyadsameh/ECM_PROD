@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Created-By: 2.4 (IBM Corporation)
+Plugin-Class: com.ebla.viewone.plugin.ViewOnePlugin
+
+Name: build
+Built-By: icnPlgin
+Build: ${TODAY}
+

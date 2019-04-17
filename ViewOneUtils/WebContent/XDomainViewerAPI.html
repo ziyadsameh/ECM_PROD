@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    	<meta http-equiv="X-UA-Compatible" content="IE=10"/>
+        <title>ICN Content Viewer Launch Sample</title>
+        <script>
+            var icnWindow = null;
+			var icnWindowStarting = false;
+            
+            function openDocument(repositoryId, docId, classId, vsId, version) {
+                getContentViewer(function(icnWindow) {
+                    var postJSON = JSON.stringify({ 
+                        call: "openDocument",
+                        repositoryId: repositoryId,
+                        docId: docId,
+                        classId: classId,
+                        vsId: vsId,
+                        version: version
+                    });
+                    icnWindow.postMessage(postJSON, "*");
+                }, true);
+                
+                return false;
+            }
+            
+            function openBookmark(bookmarkUrl) {
+                getContentViewer(function(icnWindow) {
+                    var postJSON = JSON.stringify({ 
+                        call: "openBookmark",
+                        bookmarkUrl: bookmarkUrl
+                    });
+                    icnWindow.postMessage(postJSON, "*");
+                }, true);
+                
+                return false;
+            }
+            
+            function closeAllViewers() {
+                getContentViewer(function(icnWindow) {
+                    var postJSON = JSON.stringify({ call: "closeAllViewers" });
+                    icnWindow.postMessage(postJSON, "*");
+                }, false);    
+                
+                return false;
+            }
+
+            function getContentViewer(callback, create) {
+            	try {
+                    if ( icnWindow != null  && !icnWindow.closed && !icnWindowStarting ) {
+                       	_log("getContentViewer - icnWindow found, focusing, and calling callback");
+                        icnWindow.focus();
+                        callback(icnWindow);
+                    } else if ( create && (icnWindow == null || icnWindow.closed)) {
+ 		    		    if ( !icnWindowStarting ) {
+                        	_log("getContentViewer - icnWindow not found.  Calling window.open");
+      					    icnWindowStarting = true;
+                            icnWindow = window.open("http://localhost:9080/ViewOneUtils/XDomainViewerWindow.html", "_icnWindow");
+                            _checkOpenStatus(callback, 1, 30);
+   			            } else {
+   		    			    alert("Content viewer is starting up.  Please wait.");
+   	    				}
+                    }
+            	} catch (error) {
+            		_log(error.message);
+            		icnWindow = null;
+            		icnWindowStarting = false;
+            	}
+            }
+            
+            function _checkOpenStatus(callback, attempt, retryLimit) {
+            	try {
+                	if ( icnWindow != null && !icnWindow.closed && !icnWindowStarting ) {
+                    	_log("_checkOpenStatus - attempt = " + attempt + " - icnWindow found - calling back now.");
+                	    callback(icnWindow);
+                	} else if ( attempt < retryLimit && icnWindow != null && !icnWindow.closed ) {
+                    	_log("_checkOpenStatus - attempt = " + attempt + " - icnWindow was not found, looping...");
+                	    setTimeout(function() {
+                	        _checkOpenStatus(callback, ++attempt, retryLimit);
+                	    }, 1000);
+                	} else {
+                	    alert("Content viewer was not found.  IBM Content Navigator may have failed to load, or the embedded viewer plugin may not be properly deployed.");
+    					icnWindow = null;
+    					icnWindowStarting = false;
+                	}
+            	} catch (error) {
+            		_log(error.message);
+					icnWindow = null;
+					icnWindowStarting = false;
+            	}
+            }
+            
+            function _log(message) {
+            	try {
+            		if ( console ) {
+                		console.log(message);
+            		}
+            	} catch (error) {
+            	}
+            }
+            
+            function listenMessage(event) {
+                if ( event.data == "ready" ) {
+                    icnWindowStarting = false
+                }
+            }
+
+            if (window.addEventListener) {
+                window.addEventListener("message", listenMessage, false);
+            } else {
+                window.attachEvent("onmessage", listenMessage);
+            }          
+        </script>
+    </head>
+    <body>
+        <br>
+        <a href="#" onclick='openBookmark("http://localhost:9080/navigator/bookmark.jsp?desktop=Dev&repositoryId=icmcmtos&repositoryType=p8&docid=TestClass%2C%7B9AEADB06-CA68-49F2-B6EC-6D6AD694538A%7D%2C%7B6AAF14D8-679A-45D4-8BBF-72D72BF72B5C%7D&mimeType=image/png&template_name=Document&version=current&vsId=%7BC07AEB3D-3D85-CC26-89F7-68B2F0800000%7D")'>URL 1</a>
+        <a href='#' onclick='openDocument("icmcmtos", "TestClass,{9AEADB06-CA68-49F2-B6EC-6D6AD694538A},{6AAF14D8-679A-45D4-8BBF-72D72BF72B5C}", "Document", "{C07AEB3D-3D85-CC26-89F7-68B2F0800000}", "current")'>Sample 1</a>
+        <br>
+        <a href="#" onclick='closeAllViewers()'>Close all viewers</a>
+    </body>
+</html>

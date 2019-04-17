@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="X-UA-Compatible" content="IE=10"/>
+        <base href="http://localhost:9080/navigator"/>
+        <title>Document Viewer</title>
+        <script>
+            window.onbeforeunload = function() {
+            	if ( window.icnViewerCount > 0 ) {
+               		return("There are viewer tabs still open.  Please go back and close each of these before closing the window.");
+            	}
+            }
+            
+            function getContentViewer(callback, create) {
+                var icnFrame = document.getElementById("icnFrame");
+                if ( icnFrame ) {
+                    callback(icnFrame);
+                }
+            }
+            
+            function listenMessage(event) {
+                if ( event.data == "ready" ) {
+                    window.opener.postMessage("ready", "*");
+                    window.icnViewerCount = 0;
+                } else {
+                	try {
+                	    var message = JSON.parse(event.data);
+                	    if ( message && message.call ) {
+                	    	switch ( message.call ) {
+                	    	case "addChild":
+                	    	case "removeChild":
+                	    		window.icnViewerCount = message.count;
+                	    		break;
+                	    	case "openDocument":
+                	    	case "openBookmark":
+                	    	case "closeAllViewers":
+                                getContentViewer(function(frame) {
+								    window.focus();
+                                    var postJSON = event.data;
+                                    frame.contentWindow.postMessage(postJSON, "*");
+                                }, false);    
+                	    	    break;
+                	    	}
+                	    } 
+                	} catch (error) {
+                	} 
+                }
+            }
+
+            if (window.addEventListener) {
+                window.addEventListener("message", listenMessage, false);
+            } else {
+                window.attachEvent("onmessage", listenMessage);
+            }
+            
+            
+    function ChangeAnnotationPosition(){
+			alert("Clicked!");
+			 var icnFrame = document.getElementById("icnFrame");
+			 var viewer = icnFrame.contentWindow.icnContentViewer
+			 viewer = viewer.contentViewer
+			 var ViewerWindow = icnFrame.contentWindow;
+			 var tabsLength = viewer.mainTabContainer.getChildren().length;
+			 var tabs = viewer.mainTabContainer.getChildren();
+			 var serverBase = window.location.protocol + "\/\/" + window.location.host;
+			 alert(tabs);
+
+		for(var i=0;i<tabsLength;i++){
+			if(tabs[i].selected){
+				alert("Tab no: "+i +"is selected");
+				console.log("Tab no: "+i +"is selected");
+				var viewerPane = tabs[i].contentViewerPane;
+				var item = viewerPane.viewerItem.item;
+				console.log(item.id);
+				console.log(item.repository.id);
+				var servletPrefix = "ViewOneUtils/GetWaterMarkAnnotations?";
+				var url = serverBase + "/" + servletPrefix + "docid=" + item.id +  "&repositoryId=" + item.repository.id;
+				console.log(url);
+				if(document.getElementById('Position1').checked){
+					alert("Position1");
+					var waterMarkUrl = url + "&watermarkPosition=1";
+					var vieweOddNumber = (i)+(i+1);
+					var viewerId = "nav_ecm_widget_virtualViewer_ViewoneHTMLViewer_"+vieweOddNumber;
+					console.log("viewer id : "+viewerId);
+					console.log("waterMarkUrl " + waterMarkUrl);
+					ViewerWindow[viewerId].setAnnotationFile(waterMarkUrl);
+					ViewerWindow[viewerId].reloadAnnotations();
+				}
+				if(document.getElementById('Position2').checked){
+					alert("Position2");
+					var waterMarkUrl = url + "&watermarkPosition=2";
+					var vieweOddNumber = (i)+(i+1);
+					var viewerId = "nav_ecm_widget_virtualViewer_ViewoneHTMLViewer_"+vieweOddNumber;
+					console.log("viewer id : "+viewerId);
+					console.log("waterMarkUrl " + waterMarkUrl);
+					ViewerWindow[viewerId].setAnnotationFile(waterMarkUrl);
+					ViewerWindow[viewerId].reloadAnnotations();
+				}
+				if(document.getElementById('Position3').checked){
+					alert("Position3");
+					var waterMarkUrl = url + "&watermarkPosition=3";
+					var vieweOddNumber = (i)+(i+1);
+					var viewerId = "nav_ecm_widget_virtualViewer_ViewoneHTMLViewer_"+vieweOddNumber;
+					console.log("viewer id : "+viewerId);
+					console.log("waterMarkUrl " + waterMarkUrl);
+					ViewerWindow[viewerId].setAnnotationFile(waterMarkUrl);
+					ViewerWindow[viewerId].reloadAnnotations();
+				}
+			}
+		}
+			
+			
+		}
+        </script>
+    </head>
+    <body style="width: 100%; height: 100%; overflow: hidden; margin-top: 0px; margin-left: 0px; padding-top: 0px; padding-left: 0px;">
+    <table style="background-color: #e4e4e4; width:100%">
+        <tr>
+                    <td>Choose WaterMark Position</td>
+                    <td><input id="Position1" type="radio" name="Position"  value="Position1" checked>Position 1</td>
+                    <td><input id="Position2" type="radio" name="Position"  value="Position2">Position 2</td>
+                    <td><input id="Position3" type="radio" name="Position"  value="Position3">Position 3</td>
+					<td><button id="changePosBtn" type="button" onClick="ChangeAnnotationPosition()">Change Position</button></td>
+        </tr>
+	</table>
+    <iframe id="icnFrame" src="http://localhost:9080/navigator/?desktop=Dev&feature=embeddedContentViewer&sideChrome=0" style="width: 100%; height: 100%; position: absolute; display: block;"></iframe>
+    </body>
+</html>

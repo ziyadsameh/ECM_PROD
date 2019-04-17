@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app id="WebApp_ID" version="3.0" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
+	<display-name>ViewOneUtils</display-name>
+	
+	
+	<welcome-file-list>
+		<welcome-file>index.jsp</welcome-file>
+	</welcome-file-list>
+
+	<servlet>
+	<servlet-name>GetWaterMarkAnnotations</servlet-name>
+	<servlet-class>com.ebla.viewone.services.GetWaterMarkAnnotations</servlet-class>
+	</servlet>
+	
+	<servlet-mapping>
+	<servlet-name>GetWaterMarkAnnotations</servlet-name>
+	<url-pattern>/GetWaterMarkAnnotations</url-pattern>
+	</servlet-mapping>
+	
+	<security-constraint>
+		<display-name>SecurityConstraint</display-name>
+		<web-resource-collection>
+			<web-resource-name>WRCollection</web-resource-name>
+			<url-pattern>/*</url-pattern>
+		</web-resource-collection>
+
+		<auth-constraint>
+			<role-name>ServletUsers</role-name>
+		</auth-constraint>
+		<user-data-constraint>
+			<transport-guarantee>NONE</transport-guarantee>
+		</user-data-constraint>
+	</security-constraint>
+
+	<login-config>
+		<auth-method>BASIC</auth-method>
+	</login-config>
+	<security-role>
+		<role-name>ServletUsers</role-name>
+	</security-role>
+
+      <listener>
+        <display-name>ImageIO service provider loader/unloader</display-name>
+        <listener-class>com.twelvemonkeys.servlet.image.IIOProviderContextListener</listener-class>
+    </listener>
+	
+	 <!--  <resource-ref>
+    <description>JDBC Connection For Inserting Records</description>
+  	<res-ref-name>JNDI/IndexDB</res-ref-name>
+  	<res-type>javax.sql.DataSource</res-type>
+  	<res-auth>Container</res-auth>
+  	<res-sharing-scope>Shareable</res-sharing-scope>
+  </resource-ref> -->
+	
+	
+</web-app>

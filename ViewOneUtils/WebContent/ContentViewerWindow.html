@@ -1,0 +1,78 @@
+<html>
+    <head>
+    	<meta http-equiv="X-UA-Compatible" content="IE=edge;chrome=1"/>
+        <title>ICN Content Viewer Launch Sample</title>
+        <script>
+            var icnWindow = null;
+            
+            function openDocument(repositoryId, docId, classId, vsId, version) {
+            	getContentViewer(function(contentViewer) {
+            		contentViewer.openDocument(repositoryId, docId, classId, vsId, version);
+            	}, true);
+            	
+            	return false;
+            }
+            
+            function openBookmark(bookmarkUrl) {
+            	getContentViewer(function(contentViewer) {
+            		contentViewer.openBookmark(bookmarkUrl);
+            	}, true);
+            	
+            	return false;
+            }
+            
+            function closeAllViewers() {
+            	getContentViewer(function(contentViewer) {
+            		contentViewer.closeAllViewers();
+            	}, false);    
+            	
+            	return false;
+            }
+            
+            function getContentViewer(callback, create) {
+            	var icnFrame = document.getElementById("icnFrame");
+            	if ( icnFrame ) {
+                	if ( icnFrame.contentWindow && icnFrame.contentWindow.icnContentViewer ) {
+                		callback(icnFrame.contentWindow.icnContentViewer);
+                	} else if ( create ) {
+                		alert("Content viewer was not found");
+                	}
+            	} else {
+                	if ( icnWindow && icnWindow.closed && icnWindow.closed == true) {
+        				icnWindow = null;
+        			}
+        			
+                	if ( icnWindow != null && icnWindow.icnContentViewer ) {
+                        icnWindow.focus();
+                        callback(icnWindow.icnContentViewer);
+                	} else if ( create ){
+                		icnWindow = window.open("launch.jsp?debug=true&feature=embeddedContentViewer&sideChrome=0", "_icnWindow");
+                		_checkOpenStatus(callback, 1, 15);
+                	}
+            	}
+            }
+            
+            function _checkOpenStatus(callback, attempt, retryLimit) {
+            	if ( icnWindow != null && icnWindow.icnContentViewer ) {
+            		callback(icnWindow.icnContentViewer);
+            	} else if ( attempt < retryLimit ) {
+            		setTimeout(function() {
+            			_checkOpenStatus(callback, ++attempt, retryLimit);
+            		}, 1000);
+            	} else {
+            		alert("Content viewer was not found");
+            	}
+            }
+        </script>
+    </head>
+    <body>
+        <br>
+        <a href='#' onclick='openDocument("grnvm138", "87 3 ICM8 grnvm1388 Document59 26 A1001001A13A16C13544G1963718 A13A16C13544G196371 14 2047", "Document", null, "current")'>Sample 1</a>
+        <br>
+        <a href='#' onclick='openDocument("grnvm138", "86 3 ICM8 grnvm1387 NOINDEX59 26 A1001001A13L03B61341E5080618 A13L03B61341E508061 14 1000", "NOINDEX", null, "current")'>Sample 2</a>
+        <br>
+        <a href="#" onclick='openBookmark("http://localhost/navigator/bookmark.jsp?desktop=default&repositoryId=NexusDSDB2P8&docid=Document%2C%7B336211AE-4EB8-4DB3-8E95-BD40317C20BA%7D%2C%7B99ED8D52-DE69-466F-A8F4-836EC76C0AA8%7D&template_name=Document&version=released&vsId=%7B6C221C95-68A4-4CCB-AFB7-3686D68E96CA%7D")'>URL 1</a>
+        <br>
+        <a href="#" onclick='closeAllViewers()'>Close all viewers</a>
+    </body>
+</html>
