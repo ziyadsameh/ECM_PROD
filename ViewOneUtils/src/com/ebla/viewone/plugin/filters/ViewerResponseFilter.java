@@ -11,6 +11,9 @@ import java.util.ResourceBundle;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.log4j.Logger;
+
+import com.ebla.viewone.loggers.ViewOneUtilsLogger;
 import com.ebla.viewone.services.security.DocSecurityPermissionsEnum;
 import com.ebla.viewone.services.security.SecurityPermissionsRetriever;
 import com.ebla.viewone.services.security.SecurityPermissionsRetrieverImpl;
@@ -30,6 +33,7 @@ import com.ibm.json.java.JSONObject;
 
 public class ViewerResponseFilter extends PluginResponseFilter {
 
+	private Logger logger = ViewOneUtilsLogger.getLogger(ViewerResponseFilter.class);
 	private static final String ReadOnlyAnnotationPermission = "Read";
 	private static final String ReadWriteAnnotationPermission = "Read/Write";
 	private String annotationPermission;
@@ -43,21 +47,21 @@ public class ViewerResponseFilter extends PluginResponseFilter {
 	public void filter(String serverType, PluginServiceCallbacks callbacks,
 			HttpServletRequest request, JSONObject jsonResponse) throws Exception {
 		
-		System.out.println("Server Base Url:\t" + callbacks.getServerBaseUrl());		
-		System.out.println("**********************************************************************************");
+		logger.info("Server Base Url:\t" + callbacks.getServerBaseUrl());		
+		logger.info("**********************************************************************************");
 
 
 			if (jsonResponse instanceof JSONViewoneBootstrapResponse) {
 				Map params = request.getParameterMap();
-				System.out.println("**********************************************************************************");				
+				logger.info("**********************************************************************************");				
 				JSONViewoneBootstrapResponse jvbr = (JSONViewoneBootstrapResponse) jsonResponse;
 				JSONObject viewOneBootstrap = (JSONObject) jvbr.get("viewOneBootstrap");
-				System.out.println("viewOneBootstrap-->" + jvbr.toString());
+				logger.info("viewOneBootstrap-->" + jvbr.toString());
 				Iterator i = params.keySet().iterator();
 				while (i.hasNext()) {
 					String key = (String) i.next();
 					String value = ((String[]) params.get(key))[0];
-					System.out.println("Key:\t" + key + "            Value:\t" + value);
+					logger.info("Key:\t" + key + "            Value:\t" + value);
 				}
 
 				String repositoryId = (String) request.getParameter("repositoryId");
@@ -65,10 +69,10 @@ public class ViewerResponseFilter extends PluginResponseFilter {
 			    if(request.getParameter("watermarkPosition") != null){
 			    	watermarkPosition = request.getParameter("watermarkPosition");
 			    }
-				System.out.println("repositoryId:\t" + repositoryId);
+			    logger.info("repositoryId:\t" + repositoryId);
 				String docUrl  = request.getParameter("docUrl");
 				docUrl = URLDecoder.decode(docUrl);
-				System.out.println("getDocUrl:\t" + docUrl);
+				logger.info("getDocUrl:\t" + docUrl);
 				String[] docUrlParamaters = docUrl.split("&");
 				String objectStoreName = "";
 				String docClassName = "";
@@ -85,19 +89,16 @@ public class ViewerResponseFilter extends PluginResponseFilter {
 					if(docUrlParamater.contains("vsId")){
 						vsId = docUrlParamater.substring(docUrlParamater.indexOf("&vsId=")+7);
 					}
-					else{
-						
-					}
 					if(docUrlParamater.contains("docid")){
 						documentId = docUrlParamater.substring(docUrlParamater.indexOf("docid=")+7);
 						documentId = documentId.split(",")[2];
 					}
 				}
 				 
-				System.out.println("getVsId:\t" + vsId);
-				System.out.println("getDocumentId:\t" + documentId);
-				System.out.println("getP8ObjectStore:\t" + objectStoreName);
-				System.out.println("getDocClassName:\t" + docClassName);
+				logger.info("getVsId:\t" + vsId);
+				logger.info("getDocumentId:\t" + documentId);
+				logger.info("getP8ObjectStore:\t" + objectStoreName);
+				logger.info("getDocClassName:\t" + docClassName);
 
 
 
@@ -114,10 +115,10 @@ public class ViewerResponseFilter extends PluginResponseFilter {
 				String annotationReadWriteGroup = secPermissionsMap.get(DocSecurityPermissionsEnum.PRINTW_SEC_PERMISSION.value);
 				String annotationsModifyGroup = secPermissionsMap.get(DocSecurityPermissionsEnum.MODIFY_SEC_PERMISSION.value);
 
-				System.out.println("noPrintBtnGroup: "+noPrintBtnGroup);
-				System.out.println("annotationReadOnlyGroup: "+annotationReadOnlyGroup);
-				System.out.println("annotationReadWriteGroup: "+ annotationReadWriteGroup);
-				System.out.println("annotationsModifyGroup: "+annotationsModifyGroup);
+				logger.info("noPrintBtnGroup: "+noPrintBtnGroup);
+				logger.info("annotationReadOnlyGroup: "+annotationReadOnlyGroup);
+				logger.info("annotationReadWriteGroup: "+ annotationReadWriteGroup);
+				logger.info("annotationsModifyGroup: "+annotationsModifyGroup);
 
 				User user = Factory.User.fetchCurrent(connection, null);
 				GroupSet groups = user.get_MemberOfGroups();
@@ -126,7 +127,7 @@ public class ViewerResponseFilter extends PluginResponseFilter {
 					while(iterator.hasNext()) {
 						
 					Group group = (Group) iterator.next();
-					System.out.println("Security Group:\t" + group.get_DisplayName());
+					logger.info("Security Group:\t" + group.get_DisplayName());
 					groupNames.add(group.get_DisplayName());
 				}
 					
@@ -134,7 +135,7 @@ public class ViewerResponseFilter extends PluginResponseFilter {
 
 					//if user is member of view and printW groups
 					 if(groupNames.contains(annotationReadWriteGroup)) {
-						System.out.println("Daeja Permission: Show Print Btn : Read Write Annotation");
+						logger.info("Daeja Permission: Show Print Btn : Read Write Annotation");
 						//jvbr.setViewOneParameter("printButtons", "true");
 						annotationPermission = ReadWriteAnnotationPermission;
 						//jvbr.setAnnotationHideButtons("show,save");
@@ -144,7 +145,7 @@ public class ViewerResponseFilter extends PluginResponseFilter {
 					
 					//if user is member of view and print groups
 					else if(groupNames.contains(annotationReadOnlyGroup)) {
-						System.out.println("Daeja Permission: Show Print Btn : Read Only Annotation");
+						logger.info("Daeja Permission: Show Print Btn : Read Only Annotation");
 						//jvbr.setViewOneParameter("printButtons", "true");
 						annotationPermission = ReadOnlyAnnotationPermission;
 						//jvbr.setAnnotationHideButtons("show");
@@ -154,7 +155,7 @@ public class ViewerResponseFilter extends PluginResponseFilter {
 				//if user is member of view group only
 				else 
 					{
-						System.out.println("Daeja Permission: Don't Show Print Btn : Read Only Annotation");
+						logger.info("Daeja Permission: Don't Show Print Btn : Read Only Annotation");
 						//jvbr.setViewOneParameter("printButtons", "false");
 						annotationPermission = ReadOnlyAnnotationPermission;
 						//jvbr.setAnnotationHideButtons("show");
@@ -162,14 +163,14 @@ public class ViewerResponseFilter extends PluginResponseFilter {
 					}
 					
 					if(!noPermissionSelected) {
-						System.out.println("Daeja Permission: noPermissionSelected");
+						logger.info("Daeja Permission: noPermissionSelected");
 						//jvbr.setViewOneParameter("printButtons", "false");
 						annotationPermission = ReadOnlyAnnotationPermission;
 						//jvbr.setAnnotationHideButtons("show,save");
 					}
 				
 				String annotationUrl = (String) viewOneBootstrap.get("getAnnotationUrl");
-				System.out.println("Annotation Url:\t" + annotationUrl);
+				logger.info("Annotation Url:\t" + annotationUrl);
 				//https://host/navigator/plugin/pluginid/serviceId
 				annotationUrl = annotationUrl.replace("/navigator/jaxrs/p8/getDocument", "/ViewOneUtils/GetWaterMarkAnnotations");
 				annotationUrl+= "&objectStoreName="+repositoryId;
@@ -178,27 +179,27 @@ public class ViewerResponseFilter extends PluginResponseFilter {
 					annotationUrl+= "&watermarkPosition="+watermarkPosition;	
 				}
 				
-				System.out.println("Annotation Url After modify:\t" + annotationUrl);
+				logger.info("Annotation Url After modify:\t" + annotationUrl);
 				//viewOneBootstrap.put("getAnnotationUrl",annotationUrl);
 				//viewOneBootstrap.put("printAnnotations", false);
 				//viewOneBootstrap.put("printButtons", false);
 				//jsonResponse.put("viewOneBootstrap", viewOneBootstrap);
 				jvbr.setGetAnnotationUrl(annotationUrl); 
 				//jvbr.setViewOneParameter("annotateEdit", "false");
-				System.out.println(jvbr.toString());
+				logger.info(jvbr.toString());
 				//jvbr.setAnnotationHideButtons("show");
 				//jvbr.setAnnotationHideButtons("show,save");
 				//jvbr.setViewOneParameter("annotationAllowHideAll", "false");
 				//jvbr.setViewOneParameter("annotationSecurityModel", "2");
 				//jvbr.setViewOneParameter("annotationHideContextButtons", "delete");
 				//jvbr.setViewOneParameter("printAnnotations", "true");
-				System.out.println("After ********************* After");
-				System.out.println(jvbr.toString());
+				logger.info("After ********************* After");
+				logger.info(jvbr.toString());
 				// jvbr.setViewOneParameter("annotationHideContextButtons","save");	
 				
 			}
 
-			System.out.println("**********************************************************************************");
+			logger.info("**********************************************************************************");
 		
 
 		

@@ -31,6 +31,8 @@ import javax.xml.transform.TransformerConfigurationException;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 
+import com.ebla.viewone.loggers.ViewOneUtilsLogger;
+import com.ebla.viewone.plugin.filters.ViewerResponseFilter;
 import com.ebla.viewone.services.security.DocSecurityPermissionsEnum;
 import com.ebla.viewone.services.security.SecurityPermissionsRetriever;
 import com.ebla.viewone.services.security.SecurityPermissionsRetrieverImpl;
@@ -61,7 +63,7 @@ import com.ibm.websphere.security.cred.WSCredential;
 public class GetWaterMarkAnnotations extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
-	private final static String sourceClass = GetWaterMarkAnnotations.class.getName();
+	private org.apache.log4j.Logger logger = ViewOneUtilsLogger.getLogger(GetWaterMarkAnnotations.class);
 	private String remoteAddr;
 	private static  String adminUser;
 	private static  String adminPass;
@@ -106,7 +108,7 @@ public class GetWaterMarkAnnotations extends HttpServlet {
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		
-	    System.out.println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");	    
+	    logger.info("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");	    
 		Set<String> watermarkID = new HashSet<String>();
 	    //new code
 	    remoteAddr = request.getRemoteAddr();
@@ -114,20 +116,20 @@ public class GetWaterMarkAnnotations extends HttpServlet {
 		String docid = "";
 		String osName = "";
 		String osId = "";
-		System.out.println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+		logger.info("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 		Map params = request.getParameterMap();
 	    
-		System.out.println("Printing Daeja Request Parameters:::::");
+		logger.info("Printing Daeja Request Parameters:::::");
 		Iterator i = params.keySet().iterator();
 		while (i.hasNext()) {
 			String key = (String) i.next();
 			String value = ((String[]) params.get(key))[0];
-			System.out.println("Daeja Request Key:\t" + key + "  Daeja Request Value:\t" + value);
+			logger.info("Daeja Request Key:\t" + key + "  Daeja Request Value:\t" + value);
 		}
 			    
 	    if(params.get("watermarkPosition") != null){
 	    	watermarkPosition =((String[]) params.get( "watermarkPosition" ))[ 0 ] ;
-	    	System.out.println("watermarkPosition is : "+watermarkPosition);
+	    	logger.info("watermarkPosition is : "+watermarkPosition);
 	    }
 	    
 	    if(params.get("docid") != null){
@@ -139,13 +141,13 @@ public class GetWaterMarkAnnotations extends HttpServlet {
 	    if(params.get("noOfPages") != null){
 	    	String noOfPagesString = ((String[]) params.get( "noOfPages" ))[ 0 ] ;
 	    	noOfPages = Integer.parseInt(noOfPagesString);
-	    	System.out.println("noOfPagesString is : "+noOfPagesString);
-	    	System.out.println("noOfPages is : "+noOfPages);
+	    	logger.info("noOfPagesString is : "+noOfPagesString);
+	    	logger.info("noOfPages is : "+noOfPages);
 	    }
 
 	    if(params.get("template_name") != null){
 	    	 docClassName = ((String[]) params.get( "template_name" ))[ 0 ] ;
-	    	 System.out.println("docClassName is : "+docClassName);
+	    	 logger.info("docClassName is : "+docClassName);
 	    }
 
 
@@ -192,15 +194,15 @@ public class GetWaterMarkAnnotations extends HttpServlet {
 			annotationReadWriteGroup = secPermissionsMap.get(DocSecurityPermissionsEnum.PRINTW_SEC_PERMISSION.value);
 			annotationsModifyGroup = secPermissionsMap.get(DocSecurityPermissionsEnum.MODIFY_SEC_PERMISSION.value);
 
-			System.out.println("noPrintBtnGroup: "+noPrintBtnGroup);
-			System.out.println("annotationReadOnlyGroup: "+annotationReadOnlyGroup);
-			System.out.println("annotationReadWriteGroup: "+ annotationReadWriteGroup);
-			System.out.println("annotationsModifyGroup: "+annotationsModifyGroup);
+			logger.info("noPrintBtnGroup: "+noPrintBtnGroup);
+			logger.info("annotationReadOnlyGroup: "+annotationReadOnlyGroup);
+			logger.info("annotationReadWriteGroup: "+ annotationReadWriteGroup);
+			logger.info("annotationsModifyGroup: "+annotationsModifyGroup);
 
 		    //set watermark positions
 		    if(params.get("watermarksPermission") != null){
 		    	watermarksPermission =  ((String[]) params.get( "watermarksPermission" ))[ 0 ] ;
-		    	System.out.println("Request watermarksPermission is --->> "+watermarksPermission);
+		    	logger.info("Request watermarksPermission is --->> "+watermarksPermission);
 		    } else {
 		    	
 				GroupSet groups = user.get_MemberOfGroups();
@@ -209,34 +211,34 @@ public class GetWaterMarkAnnotations extends HttpServlet {
 					while(iterator.hasNext()) {
 						
 					Group group = (Group) iterator.next();
-					System.out.println("Security Group:\t" + group.get_DisplayName());
+					logger.info("Security Group:\t" + group.get_DisplayName());
 					groupNames.add(group.get_DisplayName());
 					
 				}
 					
 				//if user is member of view and printW groups
 				if(groupNames.contains(annotationReadWriteGroup)) {
-						System.out.println("Get Watermark Daeja Permission: Show Print Btn: Read Write Annotation");
+						logger.info("Get Watermark Daeja Permission: Show Print Btn: Read Write Annotation");
 						watermarksPermission = ReadWriteAnnotationPermission;
 						noPermissionSelected = true;
 				}
 	
 				//if user is member of view and print groups	
 				else if(groupNames.contains(annotationReadOnlyGroup)) {
-					System.out.println("Get Watermark Daeja Permission: Show Print Btn: Read Only Annotation");
+					logger.info("Get Watermark Daeja Permission: Show Print Btn: Read Only Annotation");
 					watermarksPermission = ReadOnlyAnnotationPermission;
 					noPermissionSelected = true;
 				}
 				//if user is member of view group only
 				else 
 				{
-				System.out.println("Get Watermark Daeja Permission: Don't Show Print Btn: Read Only Annotation");
+				logger.info("Get Watermark Daeja Permission: Don't Show Print Btn: Read Only Annotation");
 				watermarksPermission = ReadOnlyAnnotationPermission;
 				noPermissionSelected = true;
 				}
 				
 				if(!noPermissionSelected) {
-						System.out.println("Get Watermark : Daeja Permission: noPermissionSelected");
+						logger.info("Get Watermark : Daeja Permission: noPermissionSelected");
 						watermarksPermission = ReadOnlyAnnotationPermission;
 					}
 
@@ -252,7 +254,7 @@ public class GetWaterMarkAnnotations extends HttpServlet {
 		        if(noOfPages == 0) {
 			        noOfPages = dpc.getDocPagesCount();
 		        }
-		        System.out.println("No of Pages in the document is ---> "+noOfPages);
+		        logger.info("No of Pages in the document is ---> "+noOfPages);
 		    }
 		    // end Get doc pages count
 
@@ -334,7 +336,7 @@ public class GetWaterMarkAnnotations extends HttpServlet {
 		Principal Principal = (java.security.Principal) itr.next();
 		String annoString = "";
 		if(watermarkPosition.equalsIgnoreCase(watermarkPositionOne)) {
-	    	System.out.println("puttin watermark in position 1");
+	    	logger.info("puttin watermark in position 1");
 			annoString = "<FnAnno STATE='add'>" + 
 					"<PropDesc F_ANNOTATEDID='%ID%' F_BACKCOLOR='16777215' F_BORDER_BACKMODE='2'"
 					+ " F_BORDER_COLOR='15395562' F_BORDER_STYLE='0' F_BORDER_WIDTH='1' F_CLASSID='{5CF1194C-018F-11D0-A87A-00A0246922A5}'"
@@ -354,7 +356,7 @@ public class GetWaterMarkAnnotations extends HttpServlet {
 			
 		}
 		else if(watermarkPosition.equalsIgnoreCase(watermarkPositionTwo)) {
-	    	System.out.println("puttin watermark in position 2");
+	    	logger.info("puttin watermark in position 2");
 			annoString = "<FnAnno STATE='add'>" + 
 					"<PropDesc F_ANNOTATEDID='%ID%' F_BACKCOLOR='16777215' F_BORDER_BACKMODE='2' F_BORDER_COLOR='15395562' "
 					+ " F_BORDER_STYLE='0' F_BORDER_WIDTH='1' F_CLASSID='{5CF1194C-018F-11D0-A87A-00A0246922A5}' "
@@ -373,7 +375,7 @@ public class GetWaterMarkAnnotations extends HttpServlet {
 					" </FnAnno>";
 		}
 		else if(watermarkPosition.equalsIgnoreCase(watermarkPositionThree)) {
-	    	System.out.println("puttin watermark in position 3");
+	    	logger.info("puttin watermark in position 3");
 			annoString = "<FnAnno STATE='add'>" + 
 					"<PropDesc F_ANNOTATEDID='%ID%' F_BACKCOLOR='16777215' F_BORDER_BACKMODE='2' F_BORDER_COLOR='15395562'"
 					+ " F_BORDER_STYLE='0' F_BORDER_WIDTH='1' F_CLASSID='{5CF1194C-018F-11D0-A87A-00A0246922A5}'"
@@ -392,7 +394,7 @@ public class GetWaterMarkAnnotations extends HttpServlet {
 					" </FnAnno>";
 		}
 		else {
-	    	System.out.println("puttin watermark in default position 1");
+	    	logger.info("puttin watermark in default position 1");
 			annoString = "<FnAnno STATE='add'>" + 
 					"<PropDesc F_ANNOTATEDID='%ID%' F_BACKCOLOR='16777215' F_BORDER_BACKMODE='2'"
 					+ " F_BORDER_COLOR='15395562' F_BORDER_STYLE='0' F_BORDER_WIDTH='1' F_CLASSID='{5CF1194C-018F-11D0-A87A-00A0246922A5}'"
@@ -461,8 +463,8 @@ public class GetWaterMarkAnnotations extends HttpServlet {
 	    System.out.print(props.getKeys().toString());*/
 		String ReadOnlyAnnotationPermission = AnnotationsPermissionsEnum.ReadOnlyAnnotationPermission.getAnnotationsPermission();
 		String ReadWriteAnnotationPermission = AnnotationsPermissionsEnum.ReadWriteAnnotationPermission.getAnnotationsPermission();
-		System.out.println(ReadOnlyAnnotationPermission);
-		System.out.println(ReadWriteAnnotationPermission);
+		//logger.info(ReadOnlyAnnotationPermission);
+		//logger.info(ReadWriteAnnotationPermission);
 
 
 	}

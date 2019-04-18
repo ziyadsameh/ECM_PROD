@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+
 import javax.servlet.ServletContext;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
@@ -21,12 +22,15 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
+
+import com.ebla.viewone.loggers.ViewOneUtilsLogger;
 import com.ibm.ecm.serviceability.Logger;
 import com.ibm.ecm.serviceability.Logger.LoggingContext;
 import com.ibm.ecm.util.p8.P8Annotation;
 
 public class AnnotationExporter {
 
+	private org.apache.log4j.Logger logger = ViewOneUtilsLogger.getLogger(GetWaterMarkAnnotations.class);
 	private static TransformerFactory transformerFactory = TransformerFactory.newInstance();
 	private static Templates templates = null;
 	private static Object templatesLock = new Object();
@@ -53,7 +57,7 @@ public class AnnotationExporter {
 
 		String methodName = "export";
 		Logger.logEntry(this, methodName, loggingContext);
-    	System.out.println("export watermarksPermission is --->> "+watermarksPermission);
+    	logger.info("export watermarksPermission is --->> "+watermarksPermission);
 
 		StringBuffer annotationXml = getAnnotationXml(roID,watermarksPermission);
 		try {
@@ -96,7 +100,7 @@ public class AnnotationExporter {
 					else {
 						throw new Exception("No WaterMark Permission Provided");
 					}
-					System.out.println("Annotations payload : "+annoXml);
+					logger.info("Annotations payload : "+annoXml);
 					annotationXml.append(annoXml);
 				} else {
 					annotationXml.append(p8Annotation.getXml());

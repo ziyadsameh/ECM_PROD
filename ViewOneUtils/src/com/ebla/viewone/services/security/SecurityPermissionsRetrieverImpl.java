@@ -5,6 +5,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+
+import com.ebla.viewone.loggers.ViewOneUtilsLogger;
+import com.ebla.viewone.services.GetWaterMarkAnnotations;
 import com.filenet.api.collection.AccessPermissionList;
 import com.filenet.api.constants.PropertyNames;
 import com.filenet.api.core.Document;
@@ -14,6 +18,8 @@ import com.filenet.api.security.AccessPermission;
 
 public class SecurityPermissionsRetrieverImpl implements SecurityPermissionsRetriever{
 	
+private Logger logger = ViewOneUtilsLogger.getLogger(GetWaterMarkAnnotations.class);
+
 public Map<Integer,String> getDocSecPermission(Document doc){
 	
     List<String> secPermissions = new ArrayList<String>();
@@ -49,13 +55,13 @@ public Map<Integer,String> getDocSecPermission(Document doc){
 			secPermissionsMap.put(DocSecurityPermissionsEnum.MODIFY_SEC_PERMISSION.value, per);
 		}
 
-		System.out.println("Sec Per: "+per);
+		logger.info("Sec Per: "+per);
 	}
 	
 	Iterator itr = secPermissionsMap.values().iterator();
 	Iterator itr2 = secPermissionsMap.keySet().iterator();
 	while(itr.hasNext()&&itr2.hasNext()){
-		System.out.println("Sec Per Map: "+itr.next() + "key : "+itr2.next());
+		logger.info("Sec Per Map: "+itr.next() + "key : "+itr2.next());
 
 	}
 	
